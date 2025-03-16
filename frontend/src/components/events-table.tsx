@@ -91,9 +91,15 @@ export default function EventsTable() {
           event: parseAbiItem('event BadgeAwarded(address indexed recipient, string badgeType)'),
           fromBlock: BigInt(0),
         })
-        console.log('####', logs)
-
-        setEvents([])
+        setEvents(await Promise.all(logs.map(async (e) => {
+          return {
+            recipient: e.args.recipient!,
+            badgeType: e.args.badgeType!,
+            transactionHash: e.transactionHash,
+            blockNumber: e.blockNumber,
+            timestamp: Number((await publicClient.getBlock({blockNumber: e.blockNumber})).timestamp)
+          }
+        })));
       } catch (error) {
         console.error("Error fetching past events:", error)
       }

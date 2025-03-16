@@ -5,39 +5,15 @@ import { useAccount } from "wagmi"
 import { readContract } from "wagmi/actions"
 import { formatAddress } from "../lib/utils"
 import { config } from "./wallet-provider"
+import { NFT_ABI } from "./nft-abi"
 
 // Replace with your actual NFT contract address
 const NFT_CONTRACT_ADDRESS = "0xFcffDCCa48F717a29899e0Dec046D1f1034f3e99"
 
-// Simple ABI for NFT contract
-const NFT_ABI = [
-  {
-    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
-    name: "tokenURI",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "owner", type: "address" }],
-    name: "balanceOf",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "owner", type: "address" }],
-    name: "tokensOfOwner",
-    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-]
 
 interface NFT {
-  id: number;
+  id: bigint;
   name: string;
-  image: string;
 }
 
 export default function NFTDisplay() {
@@ -79,14 +55,15 @@ export default function NFTDisplay() {
         // 1. Get token IDs owned by the user (tokensOfOwner or similar)
         // 2. Fetch metadata for each token
 
-        // Simulating NFT data for demonstration
-        const mockNFTs = Array.from({ length: balance }, (_, i) => ({
-          id: i + 1,
-          name: `Terminal NFT #${i + 1}`,
-          image: `/placeholder.svg?height=300&width=300`,
-        }))
+        const myToken = await readContract(config, {
+          address: NFT_CONTRACT_ADDRESS,
+          abi: NFT_ABI,
+          functionName: "tokenOfOwnerByIndex",
+          args: [address, 0]
+        }) as bigint;
+        console.log(myToken)
 
-        setNfts(mockNFTs)
+        setNfts([{id: myToken, name: "First Deployment"}]);
       } catch (error) {
         console.error("Error fetching NFTs:", error)
       } finally {
@@ -122,7 +99,7 @@ export default function NFTDisplay() {
             className="border border-green-500/30 rounded-md p-3 hover:border-green-500 transition-colors"
           >
             <div className="aspect-square bg-black/50 mb-2 overflow-hidden rounded">
-              <img src={nft.image || "/placeholder.svg"} alt={nft.name} className="w-full h-full object-cover" />
+              <img src={"/placeholder.png"} alt={nft.name} className="w-full h-full object-cover" style={{ width: '150px', height: '150px' }} />
             </div>
             <div className="text-green-500 font-bold">{nft.name}</div>
             <div className="text-green-500/70 text-sm">ID: {nft.id}</div>

@@ -36,7 +36,7 @@ export default function ContractState() {
         const result = await readContract(config, {
           address: CONTRACT_ADDRESS,
           abi: CONTRACT_ABI,
-          functionName: "isSpeedrunActive",
+          functionName: "speedrunActive",
           args: []
         })
 

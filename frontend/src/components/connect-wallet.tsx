@@ -27,11 +27,10 @@ export function ConnectWallet() {
                     connect({ connector })
                     setIsOpen(false)
                   }}
-                  disabled={!connector.ready || isPending}
+                  disabled={isPending}
                   className="w-full text-left px-4 py-2 text-green-500 hover:bg-green-900/20 transition-colors"
                 >
                   {connector.name}
-                  {!connector.ready && " (unsupported)"}
                   {isPending && " (connecting...)"}
                 </button>
               ))}

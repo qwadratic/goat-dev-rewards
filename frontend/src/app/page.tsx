@@ -10,8 +10,8 @@ export default function Home() {
     <WalletProvider>
       <main className="min-h-screen bg-black text-green-500 p-6 font-mono">
         <header className="flex items-center gap-2 mb-8 border-b border-green-500/30 pb-4">
-          <Terminal className="h-6 w-6" />
-          <h1 className="text-2xl font-bold">GOAT Developer Rewards</h1>
+          <Terminal className="h-6 w-6"/>
+          <h1 className="text-2xl font-bold" style={{display: "inline-block"}}>GOAT Developer Rewards</h1>
         </header>
 
         <div className="grid gap-8">
