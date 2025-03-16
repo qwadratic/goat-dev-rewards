@@ -1,9 +1,42 @@
 # **Technical Documentation: GOAT NFT Rewards System**
 
+## **Table of Contents**
+
+- [**Technical Documentation: GOAT NFT Rewards System**](#technical-documentation-goat-nft-rewards-system)
+  - [**Table of Contents**](#table-of-contents)
+  - [**Overview**](#overview)
+  - [**Smart Contract**](#smart-contract)
+    - [**Contract: `GOATDeveloperRewards`**](#contract-goatdeveloperrewards)
+    - [**Key Features**](#key-features)
+    - [**Events**](#events)
+  - [**Backend**](#backend)
+    - [**Architecture \& Components**](#architecture--components)
+    - [**Server (`server.ts`)**](#server-serverts)
+    - [**Event Listener (`listener.ts`)**](#event-listener-listenerts)
+    - [**Handlers (`handlers.ts`)**](#handlers-handlersts)
+    - [**Data Storage (`storage.ts`)**](#data-storage-storagets)
+    - [**Batch Processing (`scheduler.ts`)**](#batch-processing-schedulerts)
+  - [**Frontend**](#frontend)
+    - [Core Features](#core-features)
+      - [User Dashboard (Main Page)](#user-dashboard-main-page)
+      - [Leaderboard Page](#leaderboard-page)
+      - [Speedrun Page](#speedrun-page)
+      - [Contract Explorer Page](#contract-explorer-page)
+      - [Admin Panel (For DevRel Team)](#admin-panel-for-devrel-team)
+  - [**Deployment Instructions**](#deployment-instructions)
+    - [**Smart Contract Deployment**](#smart-contract-deployment)
+    - [**Backend Setup**](#backend-setup)
+    - [**Frontend**](#frontend-1)
+  - [**Fee estimation**](#fee-estimation)
+  - [**DevRel Strategy**](#devrel-strategy)
+
+
+
 ## **Overview**
 The GOAT NFT Rewards System incentivizes developers by issuing NFT-based achievements when specific on-chain milestones are met. The system consists of:
 - **Smart Contract** (Solidity, Viem) – Tracks contract deployments and user interactions, issues NFT rewards.
 - **Backend Service** (Node.js, Viem, Express) – Listens to blockchain events, aggregates data, and interacts with the smart contract.
+- **Frontend** (Next.js, Wagmi, Viem) - Basic functionality: mint history, my NFTs and Speedrun status
 
 ---
 
@@ -17,19 +50,19 @@ The GOAT NFT Rewards System incentivizes developers by issuing NFT-based achieve
 - **Gas Spent Badge** – Given when users spend a predefined amount of gas interacting with a contract.
 - **Speedrun Mode** – A competition where the first contract to reach a milestone while Speedrun is active wins a rare NFT.
 
-### **Functions**
+**Functions**
 
-#### `toggleSpeedrun(bool isActive) external onlyOwner`
+`toggleSpeedrun(bool isActive) external onlyOwner`
 - Enables/disables Speedrun mode.
 
-#### `recordDeployment(address contractAddress, address deployer) external onlyOwner`
+`recordDeployment(address contractAddress, address deployer) external onlyOwner`
 - Stores contract deployment details and issues badges for first-time deployers.
 
-#### `recordInteraction(address contractAddress, address user, uint256 gasSpent) external onlyOwner`
+`recordInteraction(address contractAddress, address user, uint256 gasSpent) external onlyOwner`
 - Logs user interactions with a contract, tracks gas consumption, and assigns milestone rewards.
 - If Speedrun mode is active, the first contract to hit the milestone wins instantly.
 
-#### `_mintBadge(address to, string memory badgeType) internal`
+`_mintBadge(address to, string memory badgeType) internal`
 - Mints a new NFT badge and emits an event.
 
 ### **Events**
@@ -38,7 +71,7 @@ The GOAT NFT Rewards System incentivizes developers by issuing NFT-based achieve
 
 ---
 
-## **Backend Service**
+## **Backend**
 
 ### **Architecture & Components**
 - **`server.ts`** – Initializes and runs the backend, starts the event listener and scheduler.
@@ -55,7 +88,7 @@ The GOAT NFT Rewards System incentivizes developers by issuing NFT-based achieve
 
 ### **Event Listener (`listener.ts`)**
 
-#### **Functionality**
+**Functionality**
 - Listens to **all new blocks** and processes contract deployments & user interactions.
 - Calls `recordDeployment()` whenever a new contract is detected.
 - Collects `(user, contract, gasSpent)` tuples from interactions.
@@ -68,51 +101,46 @@ The GOAT NFT Rewards System incentivizes developers by issuing NFT-based achieve
 
 Includes functions to record contract deployments and user interactions on-chain. These functions are called by the event listener when new blocks are processed, ensuring that all relevant blockchain events are captured and logged appropriately. 
 
+**Functions**
 
-#### Functions
-##### `recordDeployment(contractAddress: string, deployer: string)`
+`recordDeployment(contractAddress: string, deployer: string)`
 - Calls `recordDeployment()` on the contract.
 
-##### `recordInteraction(contract: string, user: string, gasSpent: bigint)`
+`recordInteraction(contract: string, user: string, gasSpent: bigint)`
 - Calls `recordInteraction()` with the aggregated data.
 
 
 ### **Data Storage (`storage.ts`)**
 
-#### **Stored Data**
+Stores:
 - **Aggregated user interactions** (if Speedrun is inactive)
 - **Tracking gas usage per contract per user**
 
-#### **Functions**
+**Functions**
 
-##### `saveBlockGasData(block: number, contract: string, user: string, gasSpent: bigint)`
+`saveBlockGasData(block: number, contract: string, user: string, gasSpent: bigint)`
 - Stores interaction data (contract, user, feeSpent) in Redis.
 
-##### `getAggregatedGasData(): Promise<Array<{ contract: string; user: string; gasSpent: number }>>`
+`getAggregatedGasData(): Promise<Array<{ contract: string; user: string; gasSpent: number }>>`
 - Fetches stored gas data for hourly batch processing.
 
-##### `clearGasData(contract: string, user: string)`
+`clearGasData(contract: string, user: string)`
 - Clears stored gas data after submitting interactions to the smart contract.
 
-##### `getSpeedrunStatus(): Promise<boolean>`
+`getSpeedrunStatus(): Promise<boolean>`
 - Reads the `speedrunActive` state from the smart contract.
 ---
 
 ### **Batch Processing (`scheduler.ts`)**
 
-#### **Functionality**
+**Functionality**
 - Runs **hourly** to process stored interactions.
 - Calls `recordInteraction()` for contracts with stored data.
 - Clears stored records after processing.
 
-#### **Functions**
-
-##### `scheduleHourlyUpdate()`
-- Schedules batch processing of stored interactions every hour.
-
 ---
 
-## Frontend
+## **Frontend**
 
 The frontend provides an interactive dashboard where developers can track their achievements, participate in Speedruns, and view leaderboards. 
 
@@ -156,21 +184,20 @@ The frontend provides an interactive dashboard where developers can track their 
 ## **Deployment Instructions**
 
 ### **Smart Contract Deployment**
-1. Ensure Hardhat is installed with Viem:
+1. Ensure dependencies are installed:
    ```bash
-   npm install --save-dev hardhat viem
+   npm install
    ```
 2. Compile and deploy the contract:
    ```bash
    npx hardhat compile
-   npx hardhat ignition deploy --network goat
+   npx hardhat ignition deploy ./ignition/modules/GOATDeveloperRewards.ts --network goat
    ```
 
 ### **Backend Setup**
-1. Clone the repository and install dependencies:
+1. Go to backend directory and install dependencies:
    ```bash
-   git clone <repo-url>
-   cd goat-nft-backend
+   cd backend
    npm install
    ```
 2. Set environment variables in `.env`:
@@ -179,14 +206,56 @@ The frontend provides an interactive dashboard where developers can track their 
    CONTRACT_ADDRESS=0xYourContractAddress
    PRIVATE_KEY=0xYourPrivateKey
    ```
-3. Start Redis (if using Docker):
+3. Start Redis:
    ```bash
    docker run --name goat-redis -d -p 6379:6379 redis
    ```
-4. Start the backend server:
+4. Start the backend:
    ```bash
    npx ts-node server.ts
    ```
 
 ### **Frontend**
 
+1. Go to frontend directory and install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Run the frontend app locally:
+   ```bash
+   npm run dev
+   ```
+
+## **Fee estimation**
+
+To estimate fees for smart contract calls, follow the approach described in GOAT docs [Fee Estimation article](https://docs.goat.network/builders/app-developers/transactions/estimating).
+
+Specifically, in Viem library, it should be done in a following way:
+
+```typescript
+const PRIVATE_KEY = process.env.PRIVATE_KEY!;
+const account = privateKeyToAccount(PRIVATE_KEY as `0x${string}`);
+
+const publicClient = createPublicClient({ chain: GOAT, transport: http(GOAT_RPC) });
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS! as `0x${string}`;
+
+const gasEstimate = await publicClient.estimateContractGas({
+  address: CONTRACT_ADDRESS, 
+  abi, 
+  functionName: "toggleSpeedrun", 
+  args: [true], 
+  account
+});
+const {
+  maxFeePerGas,
+  maxPriorityFeePerGas
+} = await publicClient.estimateFeesPerGas();
+
+const totalFee = gasEstimate * maxFeePerGas;
+console.log(totalFee);
+```
+
+## **DevRel Strategy**
+
+See [Strategy Document](Strategy.md)
