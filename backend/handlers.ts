@@ -1,7 +1,7 @@
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { GOAT, GOAT_RPC } from "./goatChain";
-import { abi } from "../ignition/deployments/chain-48816/artifacts/GOATDeveloperRewardsModule#GOATDeveloperRewards.json";
+import { abi } from "./abi";
 
 // GOAT Testnet3 configuration
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;

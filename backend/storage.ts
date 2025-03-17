@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 import { createPublicClient, http } from "viem";
 import dotenv from "dotenv";
-import { abi } from "../ignition/deployments/chain-48816/artifacts/GOATDeveloperRewardsModule#GOATDeveloperRewards.json";
+import { abi } from "./abi";
 import { GOAT, GOAT_RPC } from "./goatChain";
 
 dotenv.config();
