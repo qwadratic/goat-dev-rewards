@@ -14,7 +14,8 @@ export function formatAddress(address: string): string {
  * Format a timestamp to a readable date
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleString("en-US", {
+  console.log(timestamp)
+  return new Date(timestamp*1000).toLocaleString("en-US", {
     month: "short",
     day: "numeric",
     hour: "2-digit",

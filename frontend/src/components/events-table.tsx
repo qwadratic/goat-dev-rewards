@@ -137,7 +137,7 @@ export default function EventsTable() {
               <td className="py-2 px-4">{formatDate(event.timestamp)}</td>
               <td className="py-2 px-4">
                 <a
-                  href={`https://etherscan.io/tx/${event.transactionHash}`}
+                  href={`https://explorer.testnet3.goat.network/tx/${event.transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-green-500 hover:underline"
